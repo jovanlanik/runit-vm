@@ -1,0 +1,24 @@
+#!/bin/sh
+[ "$(dirname $PWD | tr '\/' '\n' | tail -n 1)" = "default" ] && exit 1
+for i in ./templates/*
+do
+	TEMPLATES="$TEMPLATES $(eval echo $(cat $i | tr '\n' ' '))"
+done
+rm -f ./templates/once
+[ -w ./supervise/monitor ] && rm -f ./supervise/monitor
+mkfifo ./supervise/monitor
+_term() { 
+	echo 'system_powerdown' > ./supervise/monitor
+	sleep $(cat ./wait)
+	echo 'quit' > ./supervise/monitor &
+	sleep 1
+	kill -KILL $QEMU
+	kill -KILL $!
+}
+trap _term TERM
+sleep 1 && echo > ./supervise/monitor &
+tail -Fn0 ./supervise/monitor | \
+qemu-system-$(arch) \
+-monitor stdio \
+$TEMPLATES \
+& QEMU=$!; wait $QEMU

@@ -1,0 +1,80 @@
+#!/bin/sh
+# runit-vm
+# Copyright (c) 2020 Jovan Lanik
+#
+[ -z $VMDIR ] && VMDIR="$HOME/.local/vms"
+[ ! -d "$VMDIR/default" ] && echo "vm: no default vm in $VMDIR" && exit 1
+[ "$(SVDIR=$VMDIR sv status default)" = "fail: default: runsv not running" ] \
+	&& echo "vm: runsvdir not running in $VMDIR. Check if vmd is running" && exit 1
+case $1 in
+	'list')
+		[ "$#" -ne 1 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
+		ls $VMDIR | cat
+		;;
+	'make')
+		[ "$#" -lt 2 ] || [ "$#" -gt 3 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
+		[ -n "$3" ] && [ -e "$3" ] && ISO_FILE=$(realpath $3)
+		[ -d "$VMDIR/$2" ] && echo "vm: vm named $2 already exists" && exit 1
+		mkdir "$VMDIR/$2"
+		cd "$VMDIR/$2"
+		touch ./down
+		printf "Disk image size for $2? "
+		read answer
+		qemu-img create -f qcow2 "./drive.qcow2" ${answer:=20G}
+		printf "\nSafe poweroff wait time for $2? "
+		read answer
+		echo ${answer:=10} > ./wait
+		printf "\nLog $2? [y/N] "
+		read answer
+		[ "$answer" != "${answer#[Yy]}" ] && ln -s ../default/log ./
+		mkdir ./templates
+		echo "\nAvailable templates:"; ls ../default/templates/
+		printf "Templates for $2? "
+		read answer
+		for i in audio-pa cpu-host drive kvm mem net-user $answer
+		do
+			rm -f "./templates/$(echo $i | cut -d '-' -f 1)"*
+			cp "../default/templates/$i" ./templates/
+		done
+		[ -n "$ISO_FILE" ] && echo "-cdrom '$ISO_FILE' -boot order=d" > ./templates/once
+		ln -s ../default/run ./
+		SVDIR=$VMDIR sv once $2
+		;;
+	'boot')
+		[ "$#" -lt 2 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
+		for i in $(seq 3 $#)
+		do
+			eval NEW=\"\$\{$i\}\"
+			ARG="$ARG $NEW"
+		done
+		echo $ARG > "$VMDIR/$2/templates/once"
+		SVDIR=$VMDIR sv once $2
+		;; 
+	'sv')
+		for i in $(seq 2 $#)
+		do
+			eval NEW=\"\$\{$i\}\"
+			ARG="$ARG $NEW"
+		done
+		SVDIR=$VMDIR sv $ARG
+		;;
+	'help')
+		[ "$#" -ne 1 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
+		echo 'usage:'
+		echo '	vm <command> [<args>]'
+		echo 'commands:'
+		echo '	list - list all vms in $VMDIR'
+		echo '	make <vm> [<iso>] - interactively create new vm'
+		echo '	boot <vm> [<arg>] - boot vm and pass args to qemu'
+		echo '	sv <command> <vms> - directly control runsv'
+		echo '	help - display this help'
+		echo 'enviroment:'
+		echo '	VMDIR - defaults to ~/vm'
+		;;
+	'')
+		echo "vm: no command. See 'vm help'"
+		;;
+	*)
+		echo "vm: $1 is not a vm command. See 'vm help'"
+		;;
+esac

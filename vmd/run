@@ -1,0 +1,3 @@
+#!/bin/sh
+[ -z $VMDIR ] && VMDIR="$HOME/.local/vms"
+exec runsvdir $VMDIR
