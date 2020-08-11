@@ -11,7 +11,7 @@ then
 fi
 [ -e "$VMCONF" ] && . $VMCONF
 # If any option is missing in enviroment or config set default value
-[ -z "$VMCONF_DEFAULT_TEMPLATES"] && VMCONF_DEFAULT_TEMPLATES="audio-pa cpu-host drive kvm mem net-user"
+[ -z "$VMCONF_DEFAULT_TEMPLATES"] && VMCONF_DEFAULT_TEMPLATES="audio-pa cpu-host drive kvm mem"
 [ -z "$VMCONF_DEFAULT_DRIVE"] && VMCONF_DEFAULT_DRIVE="20G"
 [ -z "$VMCONF_DEFAULT_WAIT"] && VMCONF_DEFAULT_WAIT="10"
 [ -z "$VMDIR" ] && VMDIR="$HOME/.local/vms"
