@@ -2,7 +2,20 @@
 # runit-vm
 # Copyright (c) 2020 Jovan Lanik
 #
-[ -z $VMDIR ] && VMDIR="$HOME/.local/vms"
+
+# Find and source config file. Location can be overwritten with $VMCONF, otherwise look in $XDG_CONFIG_HOME and ~/.config
+if test -z "$VMCONF"
+then
+	VMCONF="$HOME/.config/runit-vm/conf"
+	[ -n "$XDG_CONFIG_HOME" ] && VMCONF="$XDG_CONFIG_HOME/runit-vm/conf"
+fi
+[ -e "$VMCONF" ] && . $VMCONF
+# If any option is missing in enviroment or config set default value
+[ -z "$VMCONF_DEFAULT_TEMPLATES"] && VMCONF_DEFAULT_TEMPLATES="audio-pa cpu-host drive kvm mem net-user"
+[ -z "$VMCONF_DEFAULT_DRIVE"] && VMCONF_DEFAULT_DRIVE="20G"
+[ -z "$VMCONF_DEFAULT_WAIT"] && VMCONF_DEFAULT_WAIT="10"
+[ -z "$VMDIR" ] && VMDIR="$HOME/.local/vms"
+# Check if $VMDIR is valid and vmd is running
 [ ! -d "$VMDIR/default" ] && echo "vm: no default vm in $VMDIR" && exit 1
 [ "$(SVDIR=$VMDIR sv status default)" = "fail: default: runsv not running" ] \
 	&& echo "vm: runsvdir not running in $VMDIR. Check if vmd is running" && exit 1
@@ -19,19 +32,20 @@ case $1 in
 		cd "$VMDIR/$2"
 		touch ./down
 		printf "Disk image size for $2? "
-		read answer
-		qemu-img create -f qcow2 "./drive.qcow2" ${answer:=20G}
+		read ANS
+		qemu-img create -f qcow2 "./drive.qcow2" ${ANS:=$VMCONF_DEFAULT_DRIVE}
 		printf "\nSafe poweroff wait time for $2? "
-		read answer
-		echo ${answer:=10} > ./wait
+		read ANS
+		echo ${ANS:=$VMCONF_DEFAULT_WAIT} > ./wait
 		printf "\nLog $2? [y/N] "
-		read answer
-		[ "$answer" != "${answer#[Yy]}" ] && ln -s ../default/log ./
+		read ANS
+		[ "$ANS" != "${ANS#[Yy]}" ] && ln -s ../default/log ./
 		mkdir ./templates
-		echo "\nAvailable templates:"; ls ../default/templates/
+		echo "\nDefault templates:"; echo $VMCONF_DEFAULT_TEMPLATES
+		echo "Available templates:"; ls ../default/templates/
 		printf "Templates for $2? "
-		read answer
-		for i in audio-pa cpu-host drive kvm mem net-user $answer
+		read ANS
+		for i in $VMCONF_DEFAULT_TEMPLATES $ANS
 		do
 			rm -f "./templates/$(echo $i | cut -d '-' -f 1)"*
 			cp "../default/templates/$i" ./templates/
@@ -70,7 +84,10 @@ case $1 in
 		echo '	sv <command> <vms> - directly control runsv'
 		echo '	help - display this help'
 		echo 'enviroment:'
+		echo '	VMCONF - sourced by vm, any enviroment variables can be overwritten here'
+		echo '		defaults to $XDG_CONFIG_HOME/runit-vm/conf or ~/.config/runit-vm/conf'
 		echo '	VMDIR - defaults to ~/.local/vms'
+		echo '	VMCONF_DEFAULT_TEMPLATES, VMCONF_DEFAULT_DRIVE, VMCONF_DEFAULT_WAIT'
 		;;
 	'')
 		echo "vm: no command. See 'vm help'"
