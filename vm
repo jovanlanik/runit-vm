@@ -61,7 +61,7 @@ case $1 in
 			eval NEW=\"\$\{$i\}\"
 			ARG="$ARG $NEW"
 		done
-		echo $ARG > "$VMDIR/$2/templates/once"
+		echo $ARG >> "$VMDIR/$2/templates/once"
 		SVDIR=$VMDIR sv once $2
 		;; 
 	'sv')
