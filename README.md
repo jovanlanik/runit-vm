@@ -1,7 +1,7 @@
 # runit-vm
 QEMU wrapper using runit to manage vms
 ## Installation
-`$ ./install.sh` will install runit-vm to $VMDIR. If not set defaults to `~/.local/vms`
+`$ ./install.sh` will install runit-vm to $VMDIR. If not set defaults to `~/.local/vms`.
 Afterwards add `./vm` to $PATH and start the vmd service with runit.
 ## Usage
 `$ vm help` shows usage of all commands and enviroment variables.
