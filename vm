@@ -60,6 +60,7 @@ case $1 in
 		;;
 	'help')
 		[ "$#" -ne 1 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
+		echo 'runit-vm - QEMU wrapper using runit to manage vms'
 		echo 'usage:'
 		echo '	vm <command> [<args>]'
 		echo 'commands:'
@@ -69,7 +70,7 @@ case $1 in
 		echo '	sv <command> <vms> - directly control runsv'
 		echo '	help - display this help'
 		echo 'enviroment:'
-		echo '	VMDIR - defaults to ~/vm'
+		echo '	VMDIR - defaults to ~/.local/vms'
 		;;
 	'')
 		echo "vm: no command. See 'vm help'"
