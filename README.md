@@ -13,5 +13,5 @@ The monitor output is logged if the log folder is linked from the default vm.
 When the vm receives a TERM signal it sends `system_powerdown` to QEMU and waits for `./wait` seconds before killing QEMU.
 This is so that ACPI compliant systems have time to gracefully poweroff.
 ## Autostart
-To autostart a vm with the vmd service remove `./down' in the vm directory.
+To autostart a vm with the vmd service remove `./down` in the vm directory.
 It's recommended to use with the `nographic` template.
