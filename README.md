@@ -5,8 +5,10 @@ QEMU wrapper using runit to manage vms
 - runit
 
 Distros with runit like void work out of the box.
-Other distros may package it as an alternative (devuan, artix) or include a runit implementation in busybox (arch).
-If you are using arch the `runit-systemd` package from the AUR can also be used.
+Some distros package it as an alternative (devuan, artix).
+Others package `runit-systemd` (debian, arch).
+Arch also includes a runit implementation in busybox but it is the only distro I know of that does.
+You can also try installing runit manually or building busybox yourself.
 - qemu
 ### Automatic install
 `$ ./install.sh` will install runit-vm to $VMDIR.
