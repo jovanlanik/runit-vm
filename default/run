@@ -1,5 +1,5 @@
 #!/bin/sh
-[ "$(dirname $PWD | tr '\/' '\n' | tail -n 1)" = "default" ] && exit 1
+[ "${PWD##*/}" = "default" ] && exit 1
 for i in ./templates/*
 do
 	TEMPLATES="$TEMPLATES $(eval echo $(cat $i | tr '\n' ' '))"
