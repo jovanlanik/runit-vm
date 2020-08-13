@@ -5,10 +5,10 @@
 Description=runit-wm daemon
 
 [Service]
-Type=forking
-EnvironmentFile=/etc/runit-vm/conf
-EnvironmentFile=%h/.config/runit-vm/conf
-EnvironmentFile=%E/runit-vm/conf
+Type=simple
+EnvironmentFile=-/etc/runit-vm/conf
+EnvironmentFile=-%h/.config/runit-vm/conf
+EnvironmentFile=-%E/runit-vm/conf
 PassEnvironment=VMDIR
 ExecStart=/bin/sh -c "exec runsvdir ${VMDIR:=%h/.local/vms}"
 

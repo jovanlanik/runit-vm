@@ -10,4 +10,4 @@ then
 fi
 [ -r "$VMCONF" ] && . $VMCONF
 [ -z $VMDIR ] && VMDIR="$HOME/.local/vms"
-exec chpst -b vmd runsvdir $VMDIR
+exec runsvdir $VMDIR
