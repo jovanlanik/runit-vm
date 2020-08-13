@@ -20,7 +20,23 @@ Set $VMDIR in profile.
 ### Post install
 Add `./vm` to $PATH and start the vmd service with runit.
 ## Usage
-`$ vm help` shows usage of all commands and enviroment variables.
+`$ vm help` shows usage of all commands and environment variables.
+```
+runit-vm - QEMU wrapper using runit to manage vms
+usage:
+	vm <command> [<args>]
+commands:
+	list - list all vms in $VMDIR
+	make <vm> [<iso>] - interactively create new vm
+	boot <vm> [<arg>] - boot vm and pass args to qemu
+	sv <command> <vms> - directly control runsv
+	help - display this help
+environment:
+	VMCONF - sourced by vm, any environment variables can be overwritten here
+		defaults to $XDG_CONFIG_HOME/runit-vm/conf then ~/.config/runit-vm/conf and finally /etc/runit-vm/conf
+	VMDIR - defaults to ~/.local/vms
+	VMCONF_DEFAULT_TEMPLATES, VMCONF_DEFAULT_DRIVE, VMCONF_DEFAULT_WAIT
+```
 ## Behaviour
 When a vm is started it reads all templates in `./templates/` and adds them to QEMU arguments.
 The special template `once` is deleted after being added.
