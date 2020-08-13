@@ -1,0 +1,16 @@
+# vmd systemd service
+# Should be started by the user instance of systemd.
+
+[Unit]
+Description=runit-wm daemon
+
+[Service]
+Type=forking
+EnvironmentFile=/etc/runit-vm/conf
+EnvironmentFile=%h/.config/runit-vm/conf
+EnvironmentFile=%E/runit-vm/conf
+PassEnvironment=VMDIR
+ExecStart=/bin/sh -c "exec runsvdir ${VMDIR:=%h/.local/vms}"
+
+[Install]
+WantedBy=default.target
