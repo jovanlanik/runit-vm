@@ -2,7 +2,7 @@
 # Should be started by the user instance of systemd.
 
 [Unit]
-Description=runit-wm daemon
+Description=runit-vm daemon
 
 [Service]
 Type=simple
@@ -11,6 +11,7 @@ EnvironmentFile=-%h/.config/runit-vm/conf
 EnvironmentFile=-%E/runit-vm/conf
 PassEnvironment=VMDIR
 ExecStart=/bin/sh -c "exec runsvdir ${VMDIR:=%h/.local/vms}"
+KillMode=mixed
 
 [Install]
 WantedBy=default.target

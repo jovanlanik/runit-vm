@@ -18,7 +18,7 @@ Create a directory for your vms.
 In the directory make a symlink to `./default`.
 Set $VMDIR in profile.
 ### Post install
-Add `./vm` to $PATH and start the vmd service with runit or systemd as a user service.
+Add `./vm` to $PATH and start vmd with runit or systemd as a user service.
 - runit: <https://docs.voidlinux.org/config/services/user-services.html>
 - systemd: <https://wiki.archlinux.org/index.php/Systemd/User>
 ## Usage
