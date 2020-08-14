@@ -89,7 +89,8 @@ case $1 in
 		echo '	help - display this help'
 		echo 'environment:'
 		echo '	VMCONF - sourced by vm, any environment variables can be overwritten here'
-		echo '		defaults to $XDG_CONFIG_HOME/runit-vm/conf then ~/.config/runit-vm/conf and finally /etc/runit-vm/conf' 
+		echo '		defaults to $XDG_CONFIG_HOME/runit-vm/conf then ~/.config/runit-vm/conf'
+		echo '		and finally /etc/runit-vm/conf' 
 		echo '	VMDIR - defaults to ~/.local/vms'
 		echo '	VMCONF_DEFAULT_TEMPLATES, VMCONF_DEFAULT_DRIVE, VMCONF_DEFAULT_WAIT'
 		;;

@@ -35,7 +35,8 @@ commands:
 	help - display this help
 environment:
 	VMCONF - sourced by vm, any environment variables can be overwritten here
-		defaults to $XDG_CONFIG_HOME/runit-vm/conf then ~/.config/runit-vm/conf and finally /etc/runit-vm/conf
+		defaults to $XDG_CONFIG_HOME/runit-vm/conf then ~/.config/runit-vm/conf
+		and finally /etc/runit-vm/conf
 	VMDIR - defaults to ~/.local/vms
 	VMCONF_DEFAULT_TEMPLATES, VMCONF_DEFAULT_DRIVE, VMCONF_DEFAULT_WAIT
 ```
