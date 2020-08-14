@@ -1,6 +1,3 @@
-# vmd systemd service
-# Should be started by the user instance of systemd.
-
 [Unit]
 Description=runit-vm daemon
 
