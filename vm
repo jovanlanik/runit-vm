@@ -29,18 +29,19 @@ case $1 in
 	'make')
 		[ "$#" -lt 2 ] || [ "$#" -gt 3 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
 		[ -d "$VMDIR/$2" ] && echo "vm: vm named $2 already exists" && exit 1
+		[ -n "$3" ] && [ -e "$3" ] && ISO_FILE=$(realpath $3)
 
 		mkdir "$VMDIR/$2"
 		cd "$VMDIR/$2"
 
 		touch ./down
 		printf "Disk image size for $2? "; read ANS
-		qemu-img create -f qcow2 ./drive.qcow2 "${ANS:=${VMCONF_DEFAULT_DRIVE:='20G'}}"
+		qemu-img create -f qcow2 ./drive.qcow2 $(printf "${ANS:=${VMCONF_DEFAULT_DRIVE:='20G'}}" | sed "s/'//g")
 
 		echo; printf "Safe poweroff wait time for $2? "; read ANS
 		echo "${ANS:=${VMCONF_DEFAULT_WAIT:='10'}}" > ./wait
 
-		echo; printf "\nLog $2? [y/N] "; read ANS
+		echo; printf "Log $2? [y/N] "; read ANS
 		[ "$ANS" != "${ANS#[Yy]}" ] && ln -s ../default/log ./
 
 		mkdir ./templates
@@ -53,7 +54,7 @@ case $1 in
 			rm -f "./templates/$(echo $i | cut -d '-' -f 1)"*
 			cp "../default/templates/$i" ./templates/
 		done
-		[ -n "$3" ] && [ -e "$3" ] && echo "-cdrom '$(realpath $3)' -boot order=d" > ./templates/once
+		echo "-cdrom '$ISO_FILE' -boot order=d" > ./templates/once
 
 		ln -s ../default/run ./
 		SVDIR=$VMDIR sv once $2
