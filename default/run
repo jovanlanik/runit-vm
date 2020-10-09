@@ -1,5 +1,5 @@
 #!/bin/sh
-[ "${PWD##*/}" = "default" ] && exec chpst -b default pause
+[ "${PWD##*/}" = ".default" ] && exec chpst -b default pause
 for i in ./templates/*
 do
 	TEMPLATES="$TEMPLATES $(eval echo $(cat $i | tr '\n' ' '))"

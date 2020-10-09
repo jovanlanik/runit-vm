@@ -19,12 +19,12 @@ fi
 [ -z "$VMDIR" ] && VMDIR="$HOME/.local/vms"
 
 # Check if $VMDIR is valid
-[ ! -d "$VMDIR/default" ] && echo "vm: no default vm in $VMDIR" && exit 1
+[ ! -d "$VMDIR/.default" ] && echo "vm: no default vm in $VMDIR" && exit 1
 
 case $1 in
 	'list')
 		[ "$#" -ne 1 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
-		ls $VMDIR | grep -v 'default'
+		ls $VMDIR -1
 		;;
 	'make')
 		[ "$#" -lt 2 ] || [ "$#" -gt 3 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
@@ -42,24 +42,31 @@ case $1 in
 		echo "${ANS:=${VMCONF_DEFAULT_WAIT:='10'}}" > ./wait
 
 		echo; printf "Log $2? [y/N] "; read ANS
-		[ "$ANS" != "${ANS#[Yy]}" ] && ln -s ../default/log ./
+		if test "$ANS" != "${ANS#[Yy]}"
+		then
+			mkdir ./log
+			cd ./log
+			ln -s ../../.default/log/run ./
+			cd ..
+		fi
 
 		mkdir ./templates
 		echo
 		echo "Default templates:"; echo $VMCONF_DEFAULT_TEMPLATES
-		echo "Available templates:"; ls ../default/templates/
+		echo "Available templates:"; ls ../.default/templates/
 		printf "Templates for $2? "; read ANS
 		for i in $VMCONF_DEFAULT_TEMPLATES $ANS
 		do
 			rm -f "./templates/$(echo $i | cut -d '-' -f 1)"*
-			cp "../default/templates/$i" ./templates/
+			cp "../.default/templates/$i" ./templates/
 		done
 		echo "-cdrom '$ISO_FILE' -boot order=d" > ./templates/once
 
-		ln -s ../default/run ./
+		ln -s ../.default/run ./
 		SVDIR=$VMDIR sv once $2
 		;;
 	'boot')
+		[ "$2" = ".default" ] && exit 1
 		[ "$#" -lt 2 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
 		for i in $(seq 3 $#)
 		do
