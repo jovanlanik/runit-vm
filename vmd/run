@@ -8,6 +8,6 @@ then
 		[ -e "$XDG_CONFIG_HOME/runit-vm/conf" ] && VMCONF="$XDG_CONFIG_HOME/runit-vm/conf"
 	fi
 fi
-[ -r "$VMCONF" ] && . $VMCONF
-[ -z $VMDIR ] && VMDIR="$HOME/.local/vms"
-exec runsvdir $VMDIR
+[ -r "$VMCONF" ] && . "$VMCONF"
+[ -z "$VMDIR" ] && VMDIR="$HOME/.local/share/runit-vm"
+exec runsvdir "$VMDIR"

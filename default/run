@@ -1,24 +1,39 @@
 #!/bin/sh
+fn() { PATH='' command -v "$1" >/dev/null && $*; }
+monitor_send() {
+python3 <<EOF
+import socket
+sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+sock.connect("./supervise/qemu_monitor")
+sock.send(b"$1\n")
+EOF
+}
 [ "${PWD##*/}" = ".default" ] && exec chpst -b default pause
+[ -r './hooks' ] && . ./hooks
 for i in ./templates/*
 do
-	TEMPLATES="$TEMPLATES $(eval echo $(cat $i | tr '\n' ' '))"
+	TEMP=$(tr < "$i" '\n' ' ')
+	NEW=$(eval echo "$TEMP")
+	TEMPLATES="$TEMPLATES $NEW"
 done
 rm -f ./templates/once
 [ -w ./supervise/monitor ] && rm -f ./supervise/monitor
-mkfifo ./supervise/monitor
 _term() { 
-	echo 'system_powerdown' > ./supervise/monitor
-	sleep $(cat ./wait)
-	echo 'quit' > ./supervise/monitor &
+	monitor_send 'system_powerdown'
+	sleep "$(cat ./wait)"
+	monitor_send 'quit'
 	sleep 1
-	kill -KILL $QEMU
-	kill -KILL $!
+	kill "$QEMU" || kill -KILL "$QEMU"
 }
 trap _term TERM
-sleep 1 && echo > ./supervise/monitor &
-tail -Fn0 ./supervise/monitor | \
-qemu-system-$(arch) \
--monitor stdio \
-$TEMPLATES \
-& QEMU=$!; wait $QEMU
+fn pre_qemu
+"qemu-system-$(arch)" \
+	-pidfile './supervise/qemu_pid' \
+	-monitor unix:'./supervise/qemu_monitor',server=on,wait=off \
+	$TEMPLATES \
+	&
+QEMU=$!
+fn post_qemu &
+wait "$QEMU"
+ret=$?
+exit $ret

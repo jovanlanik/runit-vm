@@ -1,7 +1,6 @@
 #!/bin/sh
 # runit-vm
 # Copyright (c) 2020 Jovan Lanik
-#
 
 # Find and source config file. Location can be overwritten with $VMCONF, otherwise look in $XDG_CONFIG_HOME and ~/.config
 if test -z "$VMCONF"
@@ -13,10 +12,10 @@ then
 		[ -e "$XDG_CONFIG_HOME/runit-vm/conf" ] && VMCONF="$XDG_CONFIG_HOME/runit-vm/conf"
 	fi
 fi
-[ -r "$VMCONF" ] && . $VMCONF
+[ -r "$VMCONF" ] && . "$VMCONF"
 # If any option is missing in environment or config set default value
-[ -z "$VMCONF_DEFAULT_TEMPLATES"] && VMCONF_DEFAULT_TEMPLATES="audio-pa cpu-host drive kvm mem"
-[ -z "$VMDIR" ] && VMDIR="$HOME/.local/vms"
+[ -z "$VMCONF_DEFAULT_TEMPLATES" ] && VMCONF_DEFAULT_TEMPLATES="audio-pa cpu-host drive kvm mem"
+[ -z "$VMDIR" ] && VMDIR="$HOME/.local/share/runit-vm"
 
 # Check if $VMDIR is valid
 [ ! -d "$VMDIR/.default" ] && echo "vm: no default vm in $VMDIR" && exit 1
@@ -24,46 +23,46 @@ fi
 case $1 in
 	'list')
 		[ "$#" -ne 1 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
-		ls $VMDIR -1
+		ls "$VMDIR" -1
 		;;
 	'make')
 		[ "$#" -lt 2 ] || [ "$#" -gt 3 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
 		[ -d "$VMDIR/$2" ] && echo "vm: vm named $2 already exists" && exit 1
-		[ -n "$3" ] && [ -e "$3" ] && ISO_FILE=$(realpath $3)
+		[ -n "$3" ] && [ -e "$3" ] && ISO_FILE=$(realpath "$3")
 
 		mkdir "$VMDIR/$2"
-		cd "$VMDIR/$2"
+		cd "$VMDIR/$2" || exit
 
 		touch ./down
-		printf "Disk image size for $2? "; read ANS
-		qemu-img create -f qcow2 ./drive.qcow2 $(printf "${ANS:=${VMCONF_DEFAULT_DRIVE:='20G'}}" | sed "s/'//g")
+		printf "Disk image size for %s? " "$2"; read ANS
+		DISK_SIZE=$(printf "%s" "${ANS:=${VMCONF_DEFAULT_DRIVE:='20G'}}" | sed "s/'//g")
+		qemu-img create -f qcow2 ./drive.qcow2 "$DISK_SIZE"
 
-		echo; printf "Safe poweroff wait time for $2? "; read ANS
+		printf "Safe poweroff wait time for %s? " "$2"; read ANS
 		echo "${ANS:=${VMCONF_DEFAULT_WAIT:='10'}}" > ./wait
 
-		echo; printf "Log $2? [y/N] "; read ANS
+		printf "\nLog %s? [y/N] " "$2"; read ANS
 		if test "$ANS" != "${ANS#[Yy]}"
 		then
+			(
 			mkdir ./log
-			cd ./log
-			ln -s ../../.default/log/run ./
-			cd ..
+			cd ./log && ln -s ../../.default/log/run ./
+			)
 		fi
 
 		mkdir ./templates
-		echo
-		echo "Default templates:"; echo $VMCONF_DEFAULT_TEMPLATES
-		echo "Available templates:"; ls ../.default/templates/
-		printf "Templates for $2? "; read ANS
+		printf "\nDefault templates: %s\n" "$VMCONF_DEFAULT_TEMPLATES"
+		echo "Available templates:\n$(ls ../.default/templates/)"
+		printf "Templates for %s? " "$2"; read ANS
 		for i in $VMCONF_DEFAULT_TEMPLATES $ANS
 		do
-			rm -f "./templates/$(echo $i | cut -d '-' -f 1)"*
+			rm -f "./templates/$(echo "$i" | cut -d '-' -f 1)"*
 			cp "../.default/templates/$i" ./templates/
 		done
 		echo "-cdrom '$ISO_FILE' -boot order=d" > ./templates/once
 
 		ln -s ../.default/run ./
-		SVDIR=$VMDIR sv once $2
+		SVDIR="$VMDIR/" sv once "$2"
 		;;
 	'boot')
 		[ "$2" = ".default" ] && exit 1
@@ -73,8 +72,8 @@ case $1 in
 			eval NEW=\"\$\{$i\}\"
 			ARG="$ARG $NEW"
 		done
-		echo $ARG >> "$VMDIR/$2/templates/once"
-		SVDIR=$VMDIR sv once $2
+		echo "$ARG" >> "$VMDIR/$2/templates/once"
+		SVDIR="$VMDIR" sv once "$2"
 		;; 
 	'sv')
 		for i in $(seq 2 $#)
@@ -82,7 +81,7 @@ case $1 in
 			eval NEW=\"\$\{$i\}\"
 			ARG="$ARG $NEW"
 		done
-		SVDIR=$VMDIR sv $ARG
+		SVDIR="$VMDIR" SVWAIT=20 sv $ARG
 		;;
 	'help')
 		[ "$#" -ne 1 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
@@ -90,7 +89,7 @@ case $1 in
 		echo 'usage:'
 		echo '	vm <command> [<args>]'
 		echo 'commands:'
-		echo '	list - list all vms in $VMDIR'
+		echo '	list - list all vms in VMDIR'
 		echo '	make <vm> [<iso>] - interactively create new vm'
 		echo '	boot <vm> [<arg>] - boot vm and pass args to qemu'
 		echo '	sv <command> <vms> - directly control runsv'
@@ -99,7 +98,7 @@ case $1 in
 		echo '	VMCONF - sourced by vm, any environment variables can be overwritten here'
 		echo '		defaults to $XDG_CONFIG_HOME/runit-vm/conf then ~/.config/runit-vm/conf'
 		echo '		and finally /etc/runit-vm/conf' 
-		echo '	VMDIR - defaults to ~/.local/vms'
+		echo '	VMDIR - defaults to ~/.local/share/runit-vm'
 		echo '	VMCONF_DEFAULT_TEMPLATES, VMCONF_DEFAULT_DRIVE, VMCONF_DEFAULT_WAIT'
 		;;
 	'')

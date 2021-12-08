@@ -7,7 +7,7 @@ EnvironmentFile=-/etc/runit-vm/conf
 EnvironmentFile=-%h/.config/runit-vm/conf
 EnvironmentFile=-%E/runit-vm/conf
 PassEnvironment=VMDIR
-ExecStart=/bin/sh -c "exec runsvdir ${VMDIR:=%h/.local/vms}"
+ExecStart=/bin/sh -c "exec runsvdir ${VMDIR:=%h/.local/share/runit-vm}"
 KillMode=mixed
 
 [Install]
