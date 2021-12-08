@@ -33,7 +33,8 @@ fn pre_qemu
 	$TEMPLATES \
 	&
 QEMU=$!
-fn post_qemu &
+fn post_qemu
 wait "$QEMU"
 ret=$?
+fn cleanup
 exit $ret
