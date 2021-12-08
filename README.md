@@ -44,8 +44,8 @@ environment:
 ## Behaviour
 When a VM is started, first `./hooks` is sourced.
 Then it reads all templates in `./templates/` and adds them to QEMU arguments.
-Before and after QEMU is executed the functions `pre_qemu` and `post_qemu` are called.
 The special template `once` is deleted after being added.
+Before and after QEMU is executed the functions `pre_qemu` and `post_qemu` are called.
 A UNIX socket is opened at `./supervise/monitor` for the QEMU monitor input.
 QEMU output is logged if the log folder is linked from the default VM.
 When the VM receives a TERM signal it sends `system_powerdown` to QEMU and waits for `./wait` seconds before killing QEMU.
