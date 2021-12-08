@@ -62,7 +62,7 @@ case $1 in
 		echo "-cdrom '$ISO_FILE' -boot order=d" > ./templates/once
 
 		ln -s ../.default/run ./
-		SVDIR="$VMDIR/" sv once "$2"
+		SVDIR="$VMDIR" sv once "$2"
 		;;
 	'boot')
 		[ "$2" = ".default" ] && exit 1
