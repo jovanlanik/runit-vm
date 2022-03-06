@@ -1,5 +1,6 @@
 #!/bin/sh
-fn() { PATH='' command -v "$1" >/dev/null && $*; }
+set -f
+fn() { PATH='' command -v "$1" >/dev/null && $@; }
 monitor_send() {
 python3 <<EOF
 import socket
@@ -10,12 +11,14 @@ EOF
 }
 [ "${PWD##*/}" = ".default" ] && exec chpst -b default pause
 [ -r './hooks' ] && . ./hooks
+set +f
 for i in ./templates/*
 do
 	TEMP=$(tr < "$i" '\n' ' ')
 	NEW=$(eval echo "$TEMP")
 	TEMPLATES="$TEMPLATES $NEW"
 done
+set -f
 rm -f ./templates/once
 [ -w ./supervise/monitor ] && rm -f ./supervise/monitor
 _term() { 
@@ -27,11 +30,10 @@ _term() {
 }
 trap _term TERM
 fn pre_qemu
-"qemu-system-$(arch)" \
+qemu-system-"$(arch)" \
 	-pidfile './supervise/qemu_pid' \
 	-monitor unix:'./supervise/qemu_monitor',server=on,wait=off \
-	$TEMPLATES \
-	&
+	$TEMPLATES &
 QEMU=$!
 fn post_qemu
 wait "$QEMU"

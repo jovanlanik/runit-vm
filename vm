@@ -3,10 +3,10 @@
 # Copyright (c) 2020 Jovan Lanik
 
 # Find and source config file. Location can be overwritten with $VMCONF, otherwise look in $XDG_CONFIG_HOME and ~/.config
-if test -z "$VMCONF"
+if [ -z "$VMCONF" ]
 then
 	VMCONF="/etc/runit-vm/conf"
-	if test "$(id -u)" -ne 0
+	if [ "$(id -u)" -ne 0 ]
 	then
 		[ -e "$HOME/.config/runit-vm/conf" ] && VMCONF="$HOME/.config/runit-vm/conf"
 		[ -e "$XDG_CONFIG_HOME/runit-vm/conf" ] && VMCONF="$XDG_CONFIG_HOME/runit-vm/conf"
@@ -34,26 +34,20 @@ case $1 in
 		cd "$VMDIR/$2" || exit
 
 		touch ./down
-		printf "Disk image size for %s? " "$2"; read ANS
-		DISK_SIZE=$(printf "%s" "${ANS:=${VMCONF_DEFAULT_DRIVE:='20G'}}" | sed "s/'//g")
+		printf 'Disk image size for %s? ' "$2"; read -r ANS
+		DISK_SIZE=$(printf '%s' "${ANS:=${VMCONF_DEFAULT_DRIVE:='20G'}}" | sed "s/'//g")
 		qemu-img create -f qcow2 ./drive.qcow2 "$DISK_SIZE"
 
-		printf "Safe poweroff wait time for %s? " "$2"; read ANS
+		printf 'Safe poweroff wait time for %s? ' "$2"; read -r ANS
 		echo "${ANS:=${VMCONF_DEFAULT_WAIT:='10'}}" > ./wait
 
-		printf "\nLog %s? [y/N] " "$2"; read ANS
-		if test "$ANS" != "${ANS#[Yy]}"
-		then
-			(
-			mkdir ./log
-			cd ./log && ln -s ../../.default/log/run ./
-			)
-		fi
+		printf "\nLog %s? [y/N] " "$2"; read -r ANS
+		[ "$ANS" != "${ANS#[Yy]}" ] && ( mkdir ./log; cd ./log && ln -s ../../.default/log/run ./; )
 
 		mkdir ./templates
-		printf "\nDefault templates: %s\n" "$VMCONF_DEFAULT_TEMPLATES"
-		echo "Available templates:\n$(ls ../.default/templates/)"
-		printf "Templates for %s? " "$2"; read ANS
+		printf '\nDefault templates: %s\n' "$VMCONF_DEFAULT_TEMPLATES"
+		printf 'Available templates:\n%s\n' "$(ls ../.default/templates/)"
+		printf 'Templates for %s? ' "$2"; read -r ANS
 		for i in $VMCONF_DEFAULT_TEMPLATES $ANS
 		do
 			rm -f "./templates/$(echo "$i" | cut -d '-' -f 1)"*
@@ -85,21 +79,25 @@ case $1 in
 		;;
 	'help')
 		[ "$#" -ne 1 ] && echo "vm: arguments wrong. See 'vm help'" && exit 1
-		echo 'runit-vm - QEMU wrapper using runit to manage vms'
-		echo 'usage:'
-		echo '	vm <command> [<args>]'
-		echo 'commands:'
-		echo '	list - list all vms in VMDIR'
-		echo '	make <vm> [<iso>] - interactively create new vm'
-		echo '	boot <vm> [<arg>] - boot vm and pass args to qemu'
-		echo '	sv <command> <vms> - directly control runsv'
-		echo '	help - display this help'
-		echo 'environment:'
-		echo '	VMCONF - sourced by vm, any environment variables can be overwritten here'
-		echo '		defaults to $XDG_CONFIG_HOME/runit-vm/conf then ~/.config/runit-vm/conf'
-		echo '		and finally /etc/runit-vm/conf' 
-		echo '	VMDIR - defaults to ~/.local/share/runit-vm'
-		echo '	VMCONF_DEFAULT_TEMPLATES, VMCONF_DEFAULT_DRIVE, VMCONF_DEFAULT_WAIT'
+cat << EOF
+runit-vm - QEMU wrapper using runit to manage vms
+Usage:
+	vm <command> [<args>]
+Commands:
+	list - list all vms in VMDIR
+	make <vm> [<iso>] - interactively create new vm
+	boot <vm> [<arg>] - boot vm and pass args to qemu
+	sv <command> <vms> - directly control runsv
+	help - display this help
+Environment:
+	VMCONF - sourced by vm, any environment variables can be overwritten here
+		defaults to $XDG_CONFIG_HOME/runit-vm/conf then ~/.config/runit-vm/conf
+		and finally /etc/runit-vm/conf
+	VMDIR - defaults to ~/.local/share/runit-vm
+	VMCONF_DEFAULT_TEMPLATES, VMCONF_DEFAULT_DRIVE, VMCONF_DEFAULT_WAIT
+
+Report bugs to <jox969@gmail.com>.
+EOF
 		;;
 	'')
 		echo "vm: no command. See 'vm help'"
