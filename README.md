@@ -1,5 +1,5 @@
 # runit-vm
-QEMU wrapper using runit to manage VMs
+QEMU wrapper using runit to manage VMs.
 ## Installation
 ### Dependencies
 - runit
